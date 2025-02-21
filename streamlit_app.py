@@ -43,7 +43,7 @@ if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     
     # Select AI Model
-    model_choice = st.sidebar.selectbox("Choose AI Model:", ["OpenAI GPT", "Google Gemini", "Replicate Llama"])
+    model_choice = st.sidebar.selectbox("Choose AI Model:", ["OpenAI GPT", "Google Gemini", "Replicate Llama", "Stable Diffusion"])
 
     response = "🤖 AI: Sorry, no response yet."
 
@@ -64,16 +64,30 @@ if user_input:
         except Exception as e:
             response = f"⚠️ Google AI Error: {str(e)}"
 
-    # Replicate Llama Model
+    # Replicate Llama 2 Chat Model (Text-based AI)
     elif model_choice == "Replicate Llama" and replicate_key:
         try:
+            st.sidebar.info("⏳ Calling Replicate LLaMA API...")
             output = replicate.run(
                 "meta/llama-2-7b-chat",
-                input={"prompt": user_input, "max_length": 100}
+                input={"prompt": user_input, "max_length": 200}
             )
             response = "".join(output)
         except Exception as e:
-            response = f"⚠️ Replicate Error: {str(e)}"
+            response = f"⚠️ Replicate LLaMA Error: {str(e)}"
+
+    # Replicate Stable Diffusion (Image Generation)
+    elif model_choice == "Stable Diffusion" and replicate_key:
+        try:
+            st.sidebar.info("⏳ Generating image...")
+            output = replicate.run(
+                "stability-ai/stable-diffusion",
+                input={"prompt": user_input}
+            )
+            response = output[0]  # Image URL
+            st.image(response, caption="Generated Image")
+        except Exception as e:
+            response = f"⚠️ Replicate Image Error: {str(e)}"
 
     # Display AI Response
     with st.chat_message("assistant"):
