@@ -5,17 +5,17 @@ import replicate
 import os
 
 # ---- PAGE CONFIG ----
-st.set_page_config(page_title="Multi-API Chat", page_icon="💬")
+st.set_page_config(page_title="🤖 AI Chat UI", page_icon="💬")
 
 # ---- Sidebar for API Keys ----
 st.sidebar.title("🔑 API Keys & Settings")
 openai_key = st.sidebar.text_input("🔑 OpenAI API Key", type="password")
 google_key = st.sidebar.text_input("🔑 Google AI Key", type="password")
-replicate_key = st.sidebar.text_input("🔑 Replicate Key", type="password")
+replicate_key = st.sidebar.text_input("🔑 Replicate API Key", type="password")
 
-# Set keys for APIs
+# Set API keys
 if openai_key:
-    openai.api_key = openai_key
+    client = openai.OpenAI(api_key=openai_key)
 
 if google_key:
     genai.configure(api_key=google_key)
@@ -47,13 +47,13 @@ if user_input:
 
     response = "🤖 AI: Sorry, no response yet."
 
-    # OpenAI Chat Completion
+    # OpenAI Chat Completion (Fixed for OpenAI v1.0+)
     if model_choice == "OpenAI GPT" and openai_key:
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": user_input}]
-            )["choices"][0]["message"]["content"]
+            ).choices[0].message.content
         except Exception as e:
             response = f"⚠️ OpenAI Error: {str(e)}"
 
