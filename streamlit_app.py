@@ -1,6 +1,9 @@
 import streamlit as st
 import requests
 
+# Define your Vercel API URL
+API_URL = "https://your-vercel-app-url.vercel.app"  # Replace with your actual FastAPI Vercel URL
+
 # Function to send a Discord notification
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/your-webhook-id"  # Replace with your actual webhook URL
 
@@ -89,6 +92,25 @@ if st.button("Create Item and Send Discord Notification"):
         st.success(f"Item '{item_name}' created! Notification sent to Discord.")
     else:
         st.warning("Please enter an item name.")
+
+# Step 4: Call the FastAPI API deployed on Vercel
+st.header("Step 4: Call the FastAPI API from Vercel")
+
+st.write("""
+    Now, let's call the FastAPI app you deployed on Vercel. Click the button below to
+    interact with your FastAPI API and see the response.
+""")
+
+if st.button("Call API from Vercel"):
+    # Call the deployed FastAPI GET endpoint
+    try:
+        response = requests.get(f"{API_URL}/")
+        if response.status_code == 200:
+            st.write("API Response:", response.json())
+        else:
+            st.error(f"Failed to fetch data from the API. Status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error calling API: {e}")
 
 # Final Step: Recap and Interactive Learning
 st.header("Final Step: Recap & Interactive Learning")
