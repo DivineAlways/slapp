@@ -5,3 +5,4 @@ replicate
 requests
 speechrecognition
 deep-translator
+fal-client
