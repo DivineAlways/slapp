@@ -5,6 +5,8 @@ import replicate
 import requests
 import os
 import time
+import speech_recognition as sr
+from deep_translator import GoogleTranslator
 
 # ---- PAGE CONFIG ----
 st.set_page_config(page_title="🤖 AI Chat UI", page_icon="💬")
@@ -65,14 +67,15 @@ if page == "How to Use":
     3️⃣ **Function Calling:** `"What’s the weather in New York?"` → Select **OpenAI GPT + Tools**  
     4️⃣ **Image Generation:** `"A futuristic robot on Mars"` → Select **DALL·E 3**  
     5️⃣ **Speech-to-Text:** Upload an audio file → Select **Whisper (Speech-to-Text)**  
-    6️⃣ **Replicate LLaMA:** `"Explain Web3"` → Select **Replicate Llama**  
-    7️⃣ **Replicate Stable Diffusion:** `"A neon cyberpunk warrior"` → Select **Stable Diffusion**  
+    6️⃣ **Real-time Transcription:** Click "Start Recording" → Select **Whisper (Live Speech)**  
+    7️⃣ **Multilingual Transcription:** Select a language after transcribing.  
+    8️⃣ **Batch Transcription:** Upload multiple audio files for bulk processing.  
 
     **💡 Tips:**
     - Enter API keys in the sidebar before using models.
     - Select a model before typing a message.
     - For **image generation**, enter a detailed prompt.
-    - For **Whisper**, upload an **MP3 or WAV** file.
+    - For **Whisper**, upload an **MP3, WAV, or M4A** file.
 
     🚀 Have fun experimenting!
     """)
@@ -85,7 +88,7 @@ st.title("🤖 AI Chat UI")
 model_choice = st.selectbox(
     "Choose AI Model:",
     ["OpenAI GPT", "OpenAI Assistant", "OpenAI GPT + Tools", "DALL·E 3 (Image Gen)",
-     "Whisper (Speech-to-Text)", "Google Gemini", "Replicate Llama", "Stable Diffusion"]
+     "Whisper (Speech-to-Text)", "Whisper (Live Speech)", "Google Gemini", "Replicate Llama", "Stable Diffusion"]
 )
 
 # Chat History
@@ -106,83 +109,57 @@ if user_input:
 
     response = "🤖 AI: Sorry, no response yet."
 
-    # OpenAI GPT
-    if model_choice == "OpenAI GPT" and openai_key:
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": user_input}]
-            ).choices[0].message.content
-        except Exception as e:
-            response = f"⚠️ OpenAI Error: {str(e)}"
-
-    # OpenAI Assistant (Persistent AI)
-    elif model_choice == "OpenAI Assistant" and openai_key:
-        try:
-            if "assistant_id" not in st.session_state:
-                assistant = client.beta.assistants.create(
-                    name="LowPerry AI",
-                    instructions="You're a helpful assistant for game dev and AI.",
-                    tools=[],
-                    model="gpt-4-turbo"
-                )
-                st.session_state.assistant_id = assistant.id
-
-            if "thread_id" not in st.session_state:
-                thread = client.beta.threads.create()
-                st.session_state.thread_id = thread.id
-
-            client.beta.threads.messages.create(
-                thread_id=st.session_state.thread_id,
-                role="user",
-                content=user_input
-            )
-
-            run = client.beta.threads.runs.create(
-                thread_id=st.session_state.thread_id,
-                assistant_id=st.session_state.assistant_id
-            )
-
-            # Wait for completion (Polling)
-            while True:
-                run_status = client.beta.threads.runs.retrieve(run.id)
-                if run_status.status == "completed":
-                    break
-                time.sleep(2)
-
-            messages = client.beta.threads.messages.list(thread_id=st.session_state.thread_id)
-            response = messages.data[0].content[0].text.value
-
-        except Exception as e:
-            response = f"⚠️ OpenAI Assistant Error: {str(e)}"
-
-    # OpenAI Function Calling (Weather API Example)
-    elif model_choice == "OpenAI GPT + Tools":
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4-turbo",
-                messages=[{"role": "user", "content": user_input}],
-                functions=functions
-            ).choices[0].message.content
-        except Exception as e:
-            response = f"⚠️ OpenAI Tools Error: {str(e)}"
-
     # OpenAI Whisper (Speech-to-Text)
-    elif model_choice == "Whisper (Speech-to-Text)":
-        uploaded_file = st.file_uploader("Upload an audio file", type=["mp3", "wav", "m4a"])
-        if uploaded_file:
-            try:
-                file_path = f"temp_{uploaded_file.name}"
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.read())
+    if model_choice == "Whisper (Speech-to-Text)":
+        uploaded_files = st.file_uploader("Upload multiple audio files (MP3, WAV, M4A)", type=["mp3", "wav", "m4a"], accept_multiple_files=True)
+        
+        if uploaded_files:
+            for uploaded_file in uploaded_files:
+                try:
+                    file_path = f"temp_{uploaded_file.name}"
+                    with open(file_path, "wb") as f:
+                        f.write(uploaded_file.read())
 
-                with open(file_path, "rb") as f:
-                    response = client.audio.transcriptions.create(
-                        model="whisper-1",
-                        file=f
-                    ).text
-            except Exception as e:
-                response = f"⚠️ Whisper Error: {str(e)}"
+                    with open(file_path, "rb") as f:
+                        response = client.audio.transcriptions.create(
+                            model="whisper-1",
+                            file=f
+                        ).text
+
+                    # Language translation option
+                    target_lang = st.selectbox("Translate Transcription to:", ["None", "French", "Spanish", "German", "Chinese"])
+                    if target_lang != "None":
+                        translated_text = GoogleTranslator(source="auto", target=target_lang.lower()).translate(response)
+                        response += f"\n\n🌍 Translated ({target_lang}): {translated_text}"
+
+                    st.success(f"✅ Transcription: {response}")
+
+                except Exception as e:
+                    st.error(f"⚠️ Whisper Error: {str(e)}")
+
+    # OpenAI Whisper (Real-time Speech-to-Text)
+    elif model_choice == "Whisper (Live Speech)":
+        st.subheader("🎙 Live Speech Transcription")
+        recognizer = sr.Recognizer()
+        
+        if st.button("Start Recording"):
+            with sr.Microphone() as source:
+                st.info("Listening... Speak now!")
+                audio = recognizer.listen(source)
+                st.success("Recording complete. Processing...")
+
+                try:
+                    response = recognizer.recognize_google(audio)
+                    st.success(f"✅ Transcription: {response}")
+
+                    # Language translation option
+                    target_lang = st.selectbox("Translate Transcription to:", ["None", "French", "Spanish", "German", "Chinese"])
+                    if target_lang != "None":
+                        translated_text = GoogleTranslator(source="auto", target=target_lang.lower()).translate(response)
+                        response += f"\n\n🌍 Translated ({target_lang}): {translated_text}"
+
+                except Exception as e:
+                    st.error(f"⚠️ Speech Recognition Error: {str(e)}")
 
     # Display AI Response
     with st.chat_message("assistant"):
