@@ -10,6 +10,13 @@ st.title("🔮 Money Magic: A Chaos Magic Approach to Wealth")
 
 # Sidebar Navigation
 st.sidebar.title("📌 Navigation")
+st.sidebar.markdown(
+    '''
+    <elevenlabs-convai agent-id="07SRhAkpaGG5svmcKAlh"></elevenlabs-convai>
+    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+    ''',
+    unsafe_allow_html=True
+)
 section = st.sidebar.radio("Go to", ["Chaos Magic Dashboard", "Sigil Generator", "Affirmation Generator", "Manifestation Journal", "Financial Data", "Subconscious Reprogramming"])
 
 # User API Keys Input
@@ -19,16 +26,42 @@ tiingo_api_key = st.sidebar.text_input("Tiingo API Key", type="password")
 elevenlabs_api_key = st.sidebar.text_input("ElevenLabs API Key", type="password")
 
 if not openai_api_key or not tiingo_api_key or not elevenlabs_api_key:
-    st.sidebar.warning("Please enter all API keys to use the app.")
+    st.sidebar.error("⚠️ Please enter all API keys before using the app.")
+
+# OpenAI Affirmation Generator
+def generate_affirmation(api_key):
+    openai.api_key = api_key
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "system", "content": "You are a manifestation coach. Generate a powerful financial affirmation."}]
+    )
+    return response["choices"][0]["message"]["content"]
+
+# ElevenLabs Audio Generation
+def generate_audio(api_key, text):
+    url = "https://api.elevenlabs.io/v1/text-to-speech"
+    headers = {
+        "xi-api-key": api_key,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "text": text,
+        "voice_settings": {"stability": 0.5, "similarity_boost": 0.7},
+        "voice_id": "Rachel"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    
+    if response.status_code == 200:
+        with open("affirmation.mp3", "wb") as f:
+            f.write(response.content)
+        return "affirmation.mp3"
+    else:
+        return None
 
 # Chaos Magic Dashboard
 if section == "Chaos Magic Dashboard":
     st.header("🔮 Welcome to Chaos Magic & Wealth Manifestation")
     st.write("Learn how to use Chaos Magic to enhance your financial success.")
-    st.write("- **Belief as a Tool**: Your belief shapes your financial reality.")
-    st.write("- **Sigils & Intentions**: Transform financial desires into magic symbols.")
-    st.write("- **Visualization & Affirmations**: Rewire your mindset for success.")
-    st.write("- **Merging Magic with Practicality**: Balance spiritual practices with real-world financial knowledge.")
 
 # Sigil Generator
 elif section == "Sigil Generator":
@@ -37,24 +70,18 @@ elif section == "Sigil Generator":
     if st.button("Generate Sigil"):
         sigil = ''.join(random.sample(user_intent.replace(' ', ''), len(user_intent.replace(' ', ''))))
         st.success(f"Your sigil: {sigil.upper()}")
-        st.write("Use this sigil in meditation, draw it on paper, or visualize it to manifest your intent.")
 
 # Affirmation Generator
 elif section == "Affirmation Generator":
     st.header("💬 AI-Powered Financial Affirmations")
     if openai_api_key and st.button("Generate Affirmation"):
-        openai.api_key = openai_api_key
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "system", "content": "Generate a powerful financial affirmation."}]
-        )
-        affirmation = response['choices'][0]['message']['content']
+        affirmation = generate_affirmation(openai_api_key)
         st.success(affirmation)
 
 # Manifestation Journal
 elif section == "Manifestation Journal":
     st.header("📖 Manifestation Journal")
-    entry = st.text_area("Log your money magic ritual, visualization, or manifestation experience:")
+    entry = st.text_area("Log your money magic ritual or manifestation experience:")
     if st.button("Save Entry"):
         with open("manifestation_journal.txt", "a") as file:
             file.write(entry + "\n---\n")
@@ -78,23 +105,10 @@ elif section == "Subconscious Reprogramming":
     st.header("🎧 Wealth Mindset Reprogramming")
     affirmation_text = "Money flows to me effortlessly and abundantly. I am financially free."
     if elevenlabs_api_key and st.button("Generate & Play Audio"):
-        elevenlabs_url = "https://api.elevenlabs.io/v1/text-to-speech"
-        response = requests.post(
-            elevenlabs_url,
-            json={"text": affirmation_text, "voice": "Rachel"},
-            headers={"Authorization": f"Bearer {elevenlabs_api_key}"}
-        )
-        if response.status_code == 200:
-            with open("affirmation.mp3", "wb") as f:
-                f.write(response.content)
-            st.audio("affirmation.mp3")
+        audio_file = generate_audio(elevenlabs_api_key, affirmation_text)
+        if audio_file:
+            st.audio(audio_file)
         else:
             st.error("Failed to generate audio.")
-
-# ElevenLabs Convai Agent Integration
-st.markdown(
-    '<elevenlabs-convai agent-id="07SRhAkpaGG5svmcKAlh"></elevenlabs-convai><script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>',
-    unsafe_allow_html=True
-)
 
 st.write("🔮 Embrace Chaos Magic & Financial Success!")
