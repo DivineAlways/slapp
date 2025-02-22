@@ -51,8 +51,41 @@ functions = [
     }
 ]
 
+# ---- Page Navigation ----
+page = st.sidebar.radio("🔍 Navigation", ["Chat", "How to Use"])
+
+if page == "How to Use":
+    st.title("📖 How to Use AI Chat UI")
+    st.markdown("""
+    Welcome to **AI Chat UI**! Here's how to use different features:
+
+    1️⃣ **Basic Chat:** `"Tell me a joke!"` → Select **OpenAI GPT**  
+    2️⃣ **Persistent AI:** `"Remember my name is Alex"` → Select **OpenAI Assistant**  
+    3️⃣ **Function Calling:** `"What’s the weather in New York?"` → Select **OpenAI GPT + Tools**  
+    4️⃣ **Image Generation:** `"A futuristic robot on Mars"` → Select **DALL·E 3**  
+    5️⃣ **Speech-to-Text:** Upload an audio file → Select **Whisper (Speech-to-Text)**  
+    6️⃣ **Replicate LLaMA:** `"Explain Web3"` → Select **Replicate Llama**  
+    7️⃣ **Replicate Stable Diffusion:** `"A neon cyberpunk warrior"` → Select **Stable Diffusion**  
+
+    **💡 Tips:**
+    - Enter API keys in the sidebar before using models.
+    - Select a model before typing a message.
+    - For **image generation**, enter a detailed prompt.
+    - For **Whisper**, upload an **MP3 or WAV** file.
+
+    🚀 Have fun experimenting!
+    """)
+    st.stop()
+
 # ---- Chat UI ----
-st.markdown("<h1 style='text-align: center;'>🤖 AI Chat UI</h1>", unsafe_allow_html=True)
+st.title("🤖 AI Chat UI")
+
+# Move Model Selection Above Input Box
+model_choice = st.selectbox(
+    "Choose AI Model:",
+    ["OpenAI GPT", "OpenAI Assistant", "OpenAI GPT + Tools", "DALL·E 3 (Image Gen)",
+     "Whisper (Speech-to-Text)", "Google Gemini", "Replicate Llama", "Stable Diffusion"]
+)
 
 # Chat History
 if "messages" not in st.session_state:
@@ -69,13 +102,6 @@ user_input = st.chat_input("Type your message...")
 if user_input:
     # Add user message to history
     st.session_state.messages.append({"role": "user", "content": user_input})
-    
-    # Select AI Model
-    model_choice = st.sidebar.selectbox(
-        "Choose AI Model:",
-        ["OpenAI GPT", "OpenAI Assistant", "OpenAI GPT + Tools", "DALL·E 3 (Image Gen)",
-         "Whisper (Speech-to-Text)", "Google Gemini", "Replicate Llama", "Stable Diffusion"]
-    )
 
     response = "🤖 AI: Sorry, no response yet."
 
