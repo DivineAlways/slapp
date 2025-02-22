@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import openai
 import google.generativeai as genai
 import replicate
@@ -55,7 +56,7 @@ functions = [
 ]
 
 # ---- Page Navigation ----
-page = st.sidebar.radio("🔍 Navigation", ["Chat", "How to Use"])
+page = st.sidebar.radio("🔍 Navigation", ["Chat", "Voice Assistant", "How to Use"])
 
 if page == "How to Use":
     st.title("📖 How to Use AI Chat UI")
@@ -69,6 +70,7 @@ if page == "How to Use":
     5️⃣ **Batch Speech-to-Text:** Upload multiple audio files → Select **Whisper (Speech-to-Text)**  
     6️⃣ **Live Speech-to-Text:** Click "Start Recording" → Select **Whisper (Live Speech)**  
     7️⃣ **Multilingual Transcription:** Select a language after transcribing.  
+    8️⃣ **AI Voice Assistant:** Use **ElevenLabs** on the "Voice Assistant" page.  
 
     **💡 Tips:**
     - Enter API keys in the sidebar before using models.
@@ -79,6 +81,18 @@ if page == "How to Use":
     🚀 Have fun experimenting!
     """)
     st.stop()
+
+# ---- ElevenLabs AI Voice Assistant Page ----
+if page == "Voice Assistant":
+    st.title("🎤 ElevenLabs AI Voice Assistant")
+    
+    convai_html = """
+    <elevenlabs-convai agent-id="07SRhAkpaGG5svmcKAlh"></elevenlabs-convai>
+    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+    """
+    components.html(convai_html, height=300)
+
+    st.stop()  # Stop execution if on this page
 
 # ---- Chat UI ----
 st.title("🤖 AI Chat UI")
@@ -140,31 +154,6 @@ if user_input:
 
                 except Exception as e:
                     st.error(f"⚠️ Whisper Error: {str(e)}")
-
-    # OpenAI Whisper (Real-time Speech-to-Text)
-    elif model_choice == "Whisper (Live Speech)":
-        st.subheader("🎙 Live Speech Transcription")
-        
-        recognizer = sr.Recognizer()
-        
-        if st.button("Start Recording"):
-            with sr.Microphone() as source:
-                st.info("Listening... Speak now!")
-                audio = recognizer.listen(source)
-                st.success("Recording complete. Processing...")
-
-                try:
-                    response = recognizer.recognize_google(audio)
-                    st.success(f"✅ Transcription: {response}")
-
-                    # Language translation option
-                    target_lang = st.selectbox("Translate Transcription to:", ["None", "French", "Spanish", "German", "Chinese"])
-                    if target_lang != "None":
-                        translated_text = GoogleTranslator(source="auto", target=target_lang.lower()).translate(response)
-                        response += f"\n\n🌍 Translated ({target_lang}): {translated_text}"
-
-                except Exception as e:
-                    st.error(f"⚠️ Speech Recognition Error: {str(e)}")
 
     # Display AI Response
     with st.chat_message("assistant"):
