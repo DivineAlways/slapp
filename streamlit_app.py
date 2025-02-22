@@ -24,6 +24,7 @@ if st.button("Generate Image"):
     else:
         with st.spinner("Generating image..."):
             try:
+                fal_client.init(api_key=api_key)  # Explicitly initialize fal_client with API key
                 result = fal_client.subscribe(
                     "fal-ai/veo2",
                     arguments={"prompt": prompt},
