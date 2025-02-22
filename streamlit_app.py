@@ -1,130 +1,172 @@
 import streamlit as st
+import streamlit.components.v1 as components
+import openai
+import google.generativeai as genai
+import replicate
 import requests
+import os
+import time
+import speech_recognition as sr
+from deep_translator import GoogleTranslator
 
-# Define your Vercel API URL
-API_URL = "https://apis-eta-five.vercel.app/"  # Replace with your actual FastAPI Vercel URL
+# ---- PAGE CONFIG ----
+st.set_page_config(page_title="🤖 AI Chat UI", page_icon="💬")
 
-# Function to send a Discord notification
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/your-webhook-id"  # Replace with your actual webhook URL
+# ---- Sidebar for API Keys ----
+st.sidebar.title("🔑 API Keys & Settings")
+openai_key = st.sidebar.text_input("🔑 OpenAI API Key", type="password")
+google_key = st.sidebar.text_input("🔑 Google AI Key", type="password")
+replicate_key = st.sidebar.text_input("🔑 Replicate API Key", type="password")
+weather_api_key = st.sidebar.text_input("🌦 Weather API Key (Optional)", type="password")
 
-def send_discord_notification(message: str):
-    payload = {"content": message}
-    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    if response.status_code == 204:
-        st.success("Notification sent to Discord!")
-    else:
-        st.error(f"Failed to send notification. Status code: {response.status_code}")
+# Set API keys
+if openai_key:
+    client = openai.OpenAI(api_key=openai_key)
 
-# App header
-st.title("Welcome to FastLearn: Mastering FastAPI & Webhooks")
-st.write("In this course, you'll learn how to:")
-st.write("- Build a simple **FastAPI** app.")
-st.write("- Deploy it to **Vercel**.")
-st.write("- Set up **Discord Webhooks** for notifications.")
-st.write("- Create a **Streamlit app** to interact with the API.")
+if google_key:
+    genai.configure(api_key=google_key)
 
-# Step 1: Building the FastAPI app
-st.header("Step 1: Build Your FastAPI App")
+if replicate_key:
+    os.environ["REPLICATE_API_TOKEN"] = replicate_key
 
-st.write("""
-    In this module, we will create a simple **FastAPI** app that exposes a `GET /` endpoint
-    and a `POST /items/` endpoint to create items. You will also deploy it to **Vercel**.
-""")
-
-# Simulate creating the FastAPI app with a button
-if st.button("Create FastAPI App"):
-    st.code("""
-    from fastapi import FastAPI
-    from pydantic import BaseModel
-
-    app = FastAPI()
-
-    class Item(BaseModel):
-        name: str
-        description: str = None
-
-    @app.get("/")
-    def read_root():
-        return {"message": "Hello, FastLearn World!"}
-
-    @app.post("/items/")
-    def create_item(item: Item):
-        return {"name": item.name, "description": item.description}
-    """)
-    st.write("Great! You've created your FastAPI app. Now deploy it on Vercel.")
-    st.write("To deploy, follow the steps on [Vercel's documentation](https://vercel.com/docs) for Python apps.")
-
-# Step 2: Deploying to Vercel
-st.header("Step 2: Deploy to Vercel")
-
-st.write("""
-    After building the FastAPI app, you can deploy it to **Vercel**. Simply push your code to GitHub and link
-    your repository to Vercel for automatic deployment.
-    Once deployed, your app will be accessible online!
-""")
-
-# Simulate Vercel deployment process
-if st.button("Deploy to Vercel"):
-    st.write("You can deploy this app on Vercel. Here are the steps:")
-    st.write("""
-        1. Push your FastAPI app to GitHub.
-        2. Go to [Vercel](https://vercel.com/) and link your GitHub repo.
-        3. Vercel will automatically detect and deploy your FastAPI app.
-        4. After deployment, you'll get a URL for your app.
-    """)
-    st.write("Your FastAPI app is now live on Vercel!")
-
-# Step 3: Setting up Discord Webhook Notifications
-st.header("Step 3: Set up Discord Webhook Notifications")
-
-st.write("""
-    In this step, you'll learn how to connect your FastAPI app with **Discord Webhooks**.
-    You can trigger notifications every time an item is created in your FastAPI app.
-""")
-
-# Simulate sending a Discord notification when creating an item
-item_name = st.text_input("Enter Item Name:")
-item_description = st.text_area("Enter Item Description:")
-
-if st.button("Create Item and Send Discord Notification"):
-    if item_name:
-        send_discord_notification(f"New item created: {item_name} - {item_description}")
-        st.success(f"Item '{item_name}' created! Notification sent to Discord.")
-    else:
-        st.warning("Please enter an item name.")
-
-# Step 4: Call the FastAPI API deployed on Vercel
-st.header("Step 4: Call the FastAPI API from Vercel")
-
-st.write("""
-    Now, let's call the FastAPI app you deployed on Vercel. Click the button below to
-    interact with your FastAPI API and see the response.
-""")
-
-if st.button("Call API from Vercel"):
-    # Call the deployed FastAPI GET endpoint
+# ---- Function for Tools ----
+def get_weather(city):
+    if not weather_api_key:
+        return "⚠️ Please enter a Weather API Key in the sidebar."
     try:
-        response = requests.get(f"{API_URL}/")
-        if response.status_code == 200:
-            st.write("API Response:", response.json())
-        else:
-            st.error(f"Failed to fetch data from the API. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error calling API: {e}")
+        url = f"https://api.weatherapi.com/v1/current.json?key={weather_api_key}&q={city}"
+        response = requests.get(url).json()
+        return f"🌦 Current temperature in {city}: {response['current']['temp_c']}°C"
+    except:
+        return "⚠️ Unable to fetch weather data."
 
-# Final Step: Recap and Interactive Learning
-st.header("Final Step: Recap & Interactive Learning")
+# Define functions available to OpenAI
+functions = [
+    {
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string", "description": "City name"}
+            },
+            "required": ["city"]
+        }
+    }
+]
 
-st.write("""
-    You've learned how to build a FastAPI app, deploy it on Vercel, and connect it to Discord webhooks.
-    Here's what we've covered:
-    - Creating a simple **FastAPI** app.
-    - Deploying the app to **Vercel** for public access.
-    - Sending notifications to **Discord** via webhooks when creating items.
+# ---- Page Navigation ----
+page = st.sidebar.radio("🔍 Navigation", ["Chat", "Voice Assistant", "How to Use"])
 
-### Next Steps:
-- You can extend this app by adding more functionality like updating or deleting items.
-- Explore more advanced topics like authentication and database integration.
-""")
+if page == "How to Use":
+    st.title("📖 How to Use AI Chat UI")
+    st.markdown("""
+    Welcome to **AI Chat UI**! Here's how to use different features:
 
-st.write("Thanks for learning with **FastLearn**! Keep building and experimenting.")
+    1️⃣ **Basic Chat:** `"Tell me a joke!"` → Select **OpenAI GPT**  
+    2️⃣ **Persistent AI:** `"Remember my name is Alex"` → Select **OpenAI Assistant**  
+    3️⃣ **Function Calling:** `"What’s the weather in New York?"` → Select **OpenAI GPT + Tools**  
+    4️⃣ **Image Generation:** `"A futuristic robot on Mars"` → Select **DALL·E 3**  
+    5️⃣ **Batch Speech-to-Text:** Upload multiple audio files → Select **Whisper (Speech-to-Text)**  
+    6️⃣ **Live Speech-to-Text:** Click "Start Recording" → Select **Whisper (Live Speech)**  
+    7️⃣ **Multilingual Transcription:** Select a language after transcribing.  
+    8️⃣ **AI Voice Assistant:** Use **ElevenLabs** on the "Voice Assistant" page.  
+
+    **💡 Tips:**
+    - Enter API keys in the sidebar before using models.
+    - Select a model before typing a message.
+    - For **image generation**, enter a detailed prompt.
+    - For **Whisper**, upload an **MP3, WAV, or M4A** file.
+
+    🚀 Have fun experimenting!
+    """)
+    st.stop()
+
+# ---- ElevenLabs AI Voice Assistant Page ----
+if page == "Voice Assistant":
+    st.title("🎤 ElevenLabs AI Voice Assistant")
+    
+    convai_html = """
+    <elevenlabs-convai agent-id="07SRhAkpaGG5svmcKAlh"></elevenlabs-convai>
+    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+    """
+    components.html(convai_html, height=300)
+    st.stop()  # Stop execution if on this page
+
+# ---- Chat UI ----
+st.title("🤖 AI Chat UI")
+
+# Move Model Selection Above Input Box
+model_choice = st.selectbox(
+    "Choose AI Model:",
+    ["OpenAI GPT", "OpenAI Assistant", "OpenAI GPT + Tools", "DALL·E 3 (Image Gen)",
+     "Whisper (Speech-to-Text)", "Whisper (Live Speech)", "Google Gemini", "Replicate Llama", "Stable Diffusion"]
+)
+
+# Chat History
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display Chat History
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# User Input
+user_input = st.chat_input("Type your message...")
+
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    response = "🤖 AI: Sorry, no response yet."
+
+    # OpenAI GPT Chat
+    if model_choice == "OpenAI GPT" and openai_key:
+        try:
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": user_input}]
+            ).choices[0].message.content
+        except Exception as e:
+            response = f"⚠️ OpenAI Error: {str(e)}"
+
+    # OpenAI Whisper (Speech-to-Text)
+    elif model_choice == "Whisper (Speech-to-Text)":
+        st.subheader("🎙 Upload Audio Files for Transcription")
+        
+        uploaded_files = st.file_uploader("Upload multiple audio files (MP3, WAV, M4A)", 
+                                          type=["mp3", "wav", "m4a"], accept_multiple_files=True)
+        
+        if uploaded_files:
+            for uploaded_file in uploaded_files:
+                try:
+                    file_path = f"temp_{uploaded_file.name}"
+                    with open(file_path, "wb") as f:
+                        f.write(uploaded_file.read())
+
+                    with open(file_path, "rb") as f:
+                        response = client.audio.transcriptions.create(
+                            model="whisper-1",
+                            file=f
+                        ).text
+
+                    st.success(f"✅ Transcription for {uploaded_file.name}: {response}")
+
+                    # Language translation option
+                    target_lang = st.selectbox(f"Translate {uploaded_file.name} Transcription to:", 
+                                               ["None", "French", "Spanish", "German", "Chinese"])
+                    if target_lang != "None":
+                        translated_text = GoogleTranslator(source="auto", target=target_lang.lower()).translate(response)
+                        st.markdown(f"🌍 **Translated ({target_lang})**: {translated_text}")
+
+                    st.session_state.messages.append({"role": "user", "content": f"📂 Uploaded: {uploaded_file.name}"})
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+
+                except Exception as e:
+                    st.error(f"⚠️ Whisper Error: {str(e)}")
+
+    # Display AI Response
+    with st.chat_message("assistant"):
+        st.markdown(response)
+
+    # Save AI Response to History
+    st.session_state.messages.append({"role": "assistant", "content": response})
