@@ -6,3 +6,4 @@ requests
 speechrecognition
 deep-translator
 fal-client
+fastapi
