@@ -1,5 +1,6 @@
 import streamlit as st
 import fal_client
+import os
 
 # Streamlit UI
 st.title("Fal AI Veo2 Image Generator")
@@ -24,7 +25,7 @@ if st.button("Generate Image"):
     else:
         with st.spinner("Generating image..."):
             try:
-                fal_client.init(api_key=api_key)  # Explicitly initialize fal_client with API key
+                os.environ["FAL_KEY"] = api_key  # Set API key as environment variable
                 result = fal_client.subscribe(
                     "fal-ai/veo2",
                     arguments={"prompt": prompt},
