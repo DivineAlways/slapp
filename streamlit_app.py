@@ -1,130 +1,110 @@
 import streamlit as st
-import requests
 
-# Define your Vercel API URL
-API_URL = "https://apis-eta-five.vercel.app/"  # Replace with your actual FastAPI Vercel URL
+# Page Title
+st.title("Unorthodox Streamlit Experiences")
+st.markdown("Explore creative, interactive, and fun ways to use FastAPI with Streamlit!")
 
-# Function to send a Discord notification
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/your-webhook-id"  # Replace with your actual webhook URL
+# Sidebar Navigation
+st.sidebar.title("Select Experience")
+option = st.sidebar.radio(
+    "Choose an Experience",
+    [
+        "Scavenger Hunt",
+        "AI Role-Playing Game",
+        "Stock Market Simulation",
+        "AI Interview Bot",
+        "Collaborative Storytelling",
+        "Music Jam Session",
+        "Cybersecurity Challenges",
+        "Digital Time Capsule",
+        "Alternate Reality Game (ARG)",
+        "Debate Simulation",
+    ]
+)
 
-def send_discord_notification(message: str):
-    payload = {"content": message}
-    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    if response.status_code == 204:
-        st.success("Notification sent to Discord!")
-    else:
-        st.error(f"Failed to send notification. Status code: {response.status_code}")
+# Scavenger Hunt Section
+if option == "Scavenger Hunt":
+    st.header("Scavenger Hunt")
+    st.markdown("This is a scavenger hunt with real-world clues!")
+    # Placeholder for scavenger hunt logic (API calls, clues, locations, etc.)
+    st.text_input("Enter your answer:")
+    st.button("Submit Answer")
 
-# App header
-st.title("Welcome to FastLearn: Mastering FastAPI & Webhooks")
-st.write("In this course, you'll learn how to:")
-st.write("- Build a simple **FastAPI** app.")
-st.write("- Deploy it to **Vercel**.")
-st.write("- Set up **Discord Webhooks** for notifications.")
-st.write("- Create a **Streamlit app** to interact with the API.")
+# AI Role-Playing Game Section
+elif option == "AI Role-Playing Game":
+    st.header("AI Role-Playing Game")
+    st.markdown("Interact with an AI-driven RPG!")
+    # Placeholder for RPG logic (AI-generated quests, player choices, etc.)
+    st.text_area("Start your journey:")
+    st.button("Next Quest")
 
-# Step 1: Building the FastAPI app
-st.header("Step 1: Build Your FastAPI App")
+# Stock Market Simulation Section
+elif option == "Stock Market Simulation":
+    st.header("Stock Market Simulation")
+    st.markdown("Trade in a simulated stock market environment!")
+    # Placeholder for stock simulation logic (show stock data, buy/sell actions)
+    st.selectbox("Select Stock", ["AAPL", "GOOG", "AMZN", "TSLA"])
+    st.number_input("Enter Amount", min_value=1, max_value=100)
+    st.button("Buy Stock")
+    st.button("Sell Stock")
 
-st.write("""
-    In this module, we will create a simple **FastAPI** app that exposes a `GET /` endpoint
-    and a `POST /items/` endpoint to create items. You will also deploy it to **Vercel**.
-""")
+# AI Interview Bot Section
+elif option == "AI Interview Bot":
+    st.header("AI Interview Bot")
+    st.markdown("Prepare for your next interview with our AI-powered bot!")
+    # Placeholder for interview questions and AI feedback
+    st.text_area("Type your answer to the question:")
+    st.button("Submit Answer")
 
-# Simulate creating the FastAPI app with a button
-if st.button("Create FastAPI App"):
-    st.code("""
-    from fastapi import FastAPI
-    from pydantic import BaseModel
+# Collaborative Storytelling Section
+elif option == "Collaborative Storytelling":
+    st.header("Collaborative Storytelling")
+    st.markdown("Contribute to a collaborative story!")
+    # Placeholder for collaborative story (add a part, AI generates the next part)
+    st.text_area("Your story contribution:")
+    st.button("Add to Story")
 
-    app = FastAPI()
+# Music Jam Session Section
+elif option == "Music Jam Session":
+    st.header("Music Jam Session")
+    st.markdown("Create music with AI-assisted jam sessions!")
+    # Placeholder for music logic (upload sounds, AI remix, play music)
+    st.file_uploader("Upload sound clip", type=["wav", "mp3"])
+    st.button("Generate Remix")
 
-    class Item(BaseModel):
-        name: str
-        description: str = None
+# Cybersecurity Challenges Section
+elif option == "Cybersecurity Challenges":
+    st.header("Cybersecurity Challenges")
+    st.markdown("Test your cybersecurity skills!")
+    # Placeholder for cybersecurity challenges (crack hashes, solve CTFs)
+    st.text_input("Enter the cracked password:")
+    st.button("Submit")
 
-    @app.get("/")
-    def read_root():
-        return {"message": "Hello, FastLearn World!"}
+# Digital Time Capsule Section
+elif option == "Digital Time Capsule":
+    st.header("Digital Time Capsule")
+    st.markdown("Submit your message for the future!")
+    # Placeholder for time capsule (encryption, future reveal)
+    st.text_area("Your message:")
+    st.date_input("Set the reveal date:")
+    st.button("Submit Capsule")
 
-    @app.post("/items/")
-    def create_item(item: Item):
-        return {"name": item.name, "description": item.description}
-    """)
-    st.write("Great! You've created your FastAPI app. Now deploy it on Vercel.")
-    st.write("To deploy, follow the steps on [Vercel's documentation](https://vercel.com/docs) for Python apps.")
+# Alternate Reality Game (ARG) Section
+elif option == "Alternate Reality Game (ARG)":
+    st.header("Alternate Reality Game (ARG)")
+    st.markdown("Solve puzzles in the real world to progress!")
+    # Placeholder for ARG logic (real-world puzzles, clues, challenges)
+    st.text_input("Enter the puzzle solution:")
+    st.button("Submit Solution")
 
-# Step 2: Deploying to Vercel
-st.header("Step 2: Deploy to Vercel")
+# Debate Simulation Section
+elif option == "Debate Simulation":
+    st.header("Debate Simulation")
+    st.markdown("Test your debating skills with AI opponents!")
+    # Placeholder for debate logic (AI debater, score, arguments)
+    st.text_area("Enter your argument:")
+    st.button("Submit Argument")
 
-st.write("""
-    After building the FastAPI app, you can deploy it to **Vercel**. Simply push your code to GitHub and link
-    your repository to Vercel for automatic deployment.
-    Once deployed, your app will be accessible online!
-""")
-
-# Simulate Vercel deployment process
-if st.button("Deploy to Vercel"):
-    st.write("You can deploy this app on Vercel. Here are the steps:")
-    st.write("""
-        1. Push your FastAPI app to GitHub.
-        2. Go to [Vercel](https://vercel.com/) and link your GitHub repo.
-        3. Vercel will automatically detect and deploy your FastAPI app.
-        4. After deployment, you'll get a URL for your app.
-    """)
-    st.write("Your FastAPI app is now live on Vercel!")
-
-# Step 3: Setting up Discord Webhook Notifications
-st.header("Step 3: Set up Discord Webhook Notifications")
-
-st.write("""
-    In this step, you'll learn how to connect your FastAPI app with **Discord Webhooks**.
-    You can trigger notifications every time an item is created in your FastAPI app.
-""")
-
-# Simulate sending a Discord notification when creating an item
-item_name = st.text_input("Enter Item Name:")
-item_description = st.text_area("Enter Item Description:")
-
-if st.button("Create Item and Send Discord Notification"):
-    if item_name:
-        send_discord_notification(f"New item created: {item_name} - {item_description}")
-        st.success(f"Item '{item_name}' created! Notification sent to Discord.")
-    else:
-        st.warning("Please enter an item name.")
-
-# Step 4: Call the FastAPI API deployed on Vercel
-st.header("Step 4: Call the FastAPI API from Vercel")
-
-st.write("""
-    Now, let's call the FastAPI app you deployed on Vercel. Click the button below to
-    interact with your FastAPI API and see the response.
-""")
-
-if st.button("Call API from Vercel"):
-    # Call the deployed FastAPI GET endpoint
-    try:
-        response = requests.get(f"{API_URL}/")
-        if response.status_code == 200:
-            st.write("API Response:", response.json())
-        else:
-            st.error(f"Failed to fetch data from the API. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error calling API: {e}")
-
-# Final Step: Recap and Interactive Learning
-st.header("Final Step: Recap & Interactive Learning")
-
-st.write("""
-    You've learned how to build a FastAPI app, deploy it on Vercel, and connect it to Discord webhooks.
-    Here's what we've covered:
-    - Creating a simple **FastAPI** app.
-    - Deploying the app to **Vercel** for public access.
-    - Sending notifications to **Discord** via webhooks when creating items.
-
-### Next Steps:
-- You can extend this app by adding more functionality like updating or deleting items.
-- Explore more advanced topics like authentication and database integration.
-""")
-
-st.write("Thanks for learning with **FastLearn**! Keep building and experimenting.")
+# Footer
+st.markdown("---")
+st.markdown("Powered by Streamlit and FastAPI. Stay creative!")
