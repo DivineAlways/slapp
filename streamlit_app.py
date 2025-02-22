@@ -24,7 +24,7 @@ elif section == "Sigil Generator": st.header("✨ Sigil Generator") user_intent 
 
 Affirmation Generator
 
-elif section == "Affirmation Generator": st.header("💬 AI-Powered Financial Affirmations") if openai_api_key and st.button("Generate Affirmation"): openai.api_key = openai_api_key response = openai.ChatCompletion.create( model="gpt-4", messages=[{"role": "system", "content": "Generate a powerful financial affirmation."}], ) affirmation = response['choices'][0]['message']['content'] st.success(affirmation)
+elif section == "Affirmation Generator": st.header("💬 AI-Powered Financial Affirmations") if openai_api_key and st.button("Generate Affirmation"): openai.api_key = openai_api_key response = openai.ChatCompletion.create( model="gpt-4", messages=[{"role": "system", "content": "Generate a powerful financial affirmation."}] ) affirmation = response['choices'][0]['message']['content'] st.success(affirmation)
 
 Manifestation Journal
 
