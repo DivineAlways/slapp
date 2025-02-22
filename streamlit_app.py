@@ -3,13 +3,12 @@ import requests
 import base64
 from io import BytesIO
 
-# Constants
-FAL_API_URL = "https://fal.ai/models/fal-ai/veo2/api"
-API_KEY = "your_api_key_here"  # Replace with your actual API key
-
 # Streamlit UI
 st.title("Fal AI Veo2 Image Generator")
 st.write("Generate images using the Veo2 model from Fal AI.")
+
+# API Key Input
+api_key = st.text_input("Enter your API Key:", type="password")
 
 # User Input
 prompt = st.text_area("Enter a text prompt:")
@@ -17,11 +16,14 @@ prompt = st.text_area("Enter a text prompt:")
 if st.button("Generate Image"):
     if not prompt:
         st.error("Please enter a prompt before generating an image.")
+    elif not api_key:
+        st.error("Please enter your API key.")
     else:
         with st.spinner("Generating image..."):
-            headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
             payload = {"prompt": prompt}
-
+            FAL_API_URL = "https://fal.ai/models/fal-ai/veo2/api"
+            
             response = requests.post(FAL_API_URL, json=payload, headers=headers)
             
             if response.status_code == 200:
