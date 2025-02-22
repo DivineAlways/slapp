@@ -1,4 +1,8 @@
-import streamlit as st import openai import requests import random import os
+import streamlit as st 
+import openai 
+import requests 
+import random  
+import os
 
 Streamlit Page Config
 
@@ -43,3 +47,4 @@ ElevenLabs Convai Agent Integration
 st.markdown( '<elevenlabs-convai agent-id="07SRhAkpaGG5svmcKAlh"></elevenlabs-convai><script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>', unsafe_allow_html=True )
 
 st.write("🔮 Embrace Chaos Magic & Financial Success!")
+
