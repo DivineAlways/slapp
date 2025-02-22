@@ -1,130 +1,45 @@
-import streamlit as st
-import requests
+import streamlit as st import openai import requests import random import os
 
-# Define your Vercel API URL
-API_URL = "https://apis-eta-five.vercel.app/"  # Replace with your actual FastAPI Vercel URL
+Streamlit Page Config
 
-# Function to send a Discord notification
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/your-webhook-id"  # Replace with your actual webhook URL
+st.set_page_config(page_title="Money Magic App", layout="wide") st.title("🔮 Money Magic: A Chaos Magic Approach to Wealth")
 
-def send_discord_notification(message: str):
-    payload = {"content": message}
-    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    if response.status_code == 204:
-        st.success("Notification sent to Discord!")
-    else:
-        st.error(f"Failed to send notification. Status code: {response.status_code}")
+Sidebar Navigation
 
-# App header
-st.title("Welcome to FastLearn: Mastering FastAPI & Webhooks")
-st.write("In this course, you'll learn how to:")
-st.write("- Build a simple **FastAPI** app.")
-st.write("- Deploy it to **Vercel**.")
-st.write("- Set up **Discord Webhooks** for notifications.")
-st.write("- Create a **Streamlit app** to interact with the API.")
+st.sidebar.title("📌 Navigation") section = st.sidebar.radio("Go to", ["Chaos Magic Dashboard", "Sigil Generator", "Affirmation Generator", "Manifestation Journal", "Financial Data", "Subconscious Reprogramming"])
 
-# Step 1: Building the FastAPI app
-st.header("Step 1: Build Your FastAPI App")
+User API Keys Input
 
-st.write("""
-    In this module, we will create a simple **FastAPI** app that exposes a `GET /` endpoint
-    and a `POST /items/` endpoint to create items. You will also deploy it to **Vercel**.
-""")
+st.sidebar.header("🔑 Enter Your API Keys") openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password") tiingo_api_key = st.sidebar.text_input("Tiingo API Key", type="password") elevenlabs_api_key = st.sidebar.text_input("ElevenLabs API Key", type="password")
 
-# Simulate creating the FastAPI app with a button
-if st.button("Create FastAPI App"):
-    st.code("""
-    from fastapi import FastAPI
-    from pydantic import BaseModel
+if not openai_api_key or not tiingo_api_key or not elevenlabs_api_key: st.sidebar.warning("Please enter all API keys to use the app.")
 
-    app = FastAPI()
+Chaos Magic Dashboard
 
-    class Item(BaseModel):
-        name: str
-        description: str = None
+if section == "Chaos Magic Dashboard": st.header("🔮 Welcome to Chaos Magic & Wealth Manifestation") st.write("Learn how to use Chaos Magic to enhance your financial success.") st.write("- Belief as a Tool: Your belief shapes your financial reality.") st.write("- Sigils & Intentions: Transform financial desires into magic symbols.") st.write("- Visualization & Affirmations: Rewire your mindset for success.") st.write("- Merging Magic with Practicality: Balance spiritual practices with real-world financial knowledge.")
 
-    @app.get("/")
-    def read_root():
-        return {"message": "Hello, FastLearn World!"}
+Sigil Generator
 
-    @app.post("/items/")
-    def create_item(item: Item):
-        return {"name": item.name, "description": item.description}
-    """)
-    st.write("Great! You've created your FastAPI app. Now deploy it on Vercel.")
-    st.write("To deploy, follow the steps on [Vercel's documentation](https://vercel.com/docs) for Python apps.")
+elif section == "Sigil Generator": st.header("✨ Sigil Generator") user_intent = st.text_input("Enter your financial intention (e.g., 'I attract wealth effortlessly'):") if st.button("Generate Sigil"): sigil = ''.join(random.sample(user_intent.replace(' ', ''), len(user_intent.replace(' ', '')))) st.success(f"Your sigil: {sigil.upper()}") st.write("Use this sigil in meditation, draw it on paper, or visualize it to manifest your intent.")
 
-# Step 2: Deploying to Vercel
-st.header("Step 2: Deploy to Vercel")
+Affirmation Generator
 
-st.write("""
-    After building the FastAPI app, you can deploy it to **Vercel**. Simply push your code to GitHub and link
-    your repository to Vercel for automatic deployment.
-    Once deployed, your app will be accessible online!
-""")
+elif section == "Affirmation Generator": st.header("💬 AI-Powered Financial Affirmations") if openai_api_key and st.button("Generate Affirmation"): openai.api_key = openai_api_key response = openai.ChatCompletion.create( model="gpt-4", messages=[{"role": "system", "content": "Generate a powerful financial affirmation."}], ) affirmation = response['choices'][0]['message']['content'] st.success(affirmation)
 
-# Simulate Vercel deployment process
-if st.button("Deploy to Vercel"):
-    st.write("You can deploy this app on Vercel. Here are the steps:")
-    st.write("""
-        1. Push your FastAPI app to GitHub.
-        2. Go to [Vercel](https://vercel.com/) and link your GitHub repo.
-        3. Vercel will automatically detect and deploy your FastAPI app.
-        4. After deployment, you'll get a URL for your app.
-    """)
-    st.write("Your FastAPI app is now live on Vercel!")
+Manifestation Journal
 
-# Step 3: Setting up Discord Webhook Notifications
-st.header("Step 3: Set up Discord Webhook Notifications")
+elif section == "Manifestation Journal": st.header("📖 Manifestation Journal") entry = st.text_area("Log your money magic ritual, visualization, or manifestation experience:") if st.button("Save Entry"): with open("manifestation_journal.txt", "a") as file: file.write(entry + "\n---\n") st.success("Entry saved! Keep manifesting.")
 
-st.write("""
-    In this step, you'll learn how to connect your FastAPI app with **Discord Webhooks**.
-    You can trigger notifications every time an item is created in your FastAPI app.
-""")
+Financial Data (Using Tiingo API)
 
-# Simulate sending a Discord notification when creating an item
-item_name = st.text_input("Enter Item Name:")
-item_description = st.text_area("Enter Item Description:")
+elif section == "Financial Data": st.header("📊 Real-Time Financial Data") ticker = st.text_input("Enter Stock/Crypto Symbol (e.g., AAPL, BTCUSD):", "AAPL") if tiingo_api_key and st.button("Get Data"): url = f"https://api.tiingo.com/tiingo/daily/{ticker}/prices?token={tiingo_api_key}" response = requests.get(url) if response.status_code == 200: data = response.json() st.write(f"{ticker} Price: ${data[0]['close']}") else: st.error("Error fetching data. Check symbol and API key.")
 
-if st.button("Create Item and Send Discord Notification"):
-    if item_name:
-        send_discord_notification(f"New item created: {item_name} - {item_description}")
-        st.success(f"Item '{item_name}' created! Notification sent to Discord.")
-    else:
-        st.warning("Please enter an item name.")
+Subconscious Reprogramming (Audio from ElevenLabs)
 
-# Step 4: Call the FastAPI API deployed on Vercel
-st.header("Step 4: Call the FastAPI API from Vercel")
+elif section == "Subconscious Reprogramming": st.header("🎧 Wealth Mindset Reprogramming") affirmation_text = "Money flows to me effortlessly and abundantly. I am financially free." if elevenlabs_api_key and st.button("Generate & Play Audio"): elevenlabs_url = "https://api.elevenlabs.io/v1/text-to-speech" response = requests.post( elevenlabs_url, json={"text": affirmation_text, "voice": "Rachel"}, headers={"Authorization": f"Bearer {elevenlabs_api_key}"} ) if response.status_code == 200: with open("affirmation.mp3", "wb") as f: f.write(response.content) st.audio("affirmation.mp3") else: st.error("Failed to generate audio.")
 
-st.write("""
-    Now, let's call the FastAPI app you deployed on Vercel. Click the button below to
-    interact with your FastAPI API and see the response.
-""")
+ElevenLabs Convai Agent Integration
 
-if st.button("Call API from Vercel"):
-    # Call the deployed FastAPI GET endpoint
-    try:
-        response = requests.get(f"{API_URL}/")
-        if response.status_code == 200:
-            st.write("API Response:", response.json())
-        else:
-            st.error(f"Failed to fetch data from the API. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error calling API: {e}")
+st.markdown( '<elevenlabs-convai agent-id="07SRhAkpaGG5svmcKAlh"></elevenlabs-convai><script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>', unsafe_allow_html=True )
 
-# Final Step: Recap and Interactive Learning
-st.header("Final Step: Recap & Interactive Learning")
-
-st.write("""
-    You've learned how to build a FastAPI app, deploy it on Vercel, and connect it to Discord webhooks.
-    Here's what we've covered:
-    - Creating a simple **FastAPI** app.
-    - Deploying the app to **Vercel** for public access.
-    - Sending notifications to **Discord** via webhooks when creating items.
-
-### Next Steps:
-- You can extend this app by adding more functionality like updating or deleting items.
-- Explore more advanced topics like authentication and database integration.
-""")
-
-st.write("Thanks for learning with **FastLearn**! Keep building and experimenting.")
+st.write("🔮 Embrace Chaos Magic & Financial Success!")
