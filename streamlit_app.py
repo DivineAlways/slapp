@@ -24,14 +24,19 @@ if st.button("Generate Image"):
             payload = {"prompt": prompt}
             FAL_API_URL = "https://fal.ai/models/fal-ai/veo2/api"
             
-            response = requests.post(FAL_API_URL, json=payload, headers=headers)
-            
-            if response.status_code == 200:
-                image_data = response.json().get("image")
+            try:
+                response = requests.post(FAL_API_URL, json=payload, headers=headers)
+                st.write(f"Response Status Code: {response.status_code}")
+                st.write("Raw Response:", response.text[:500])  # Log the first 500 characters
+                
+                # Try parsing JSON
+                response_json = response.json()
+                image_data = response_json.get("image")
+                
                 if image_data:
                     image_bytes = base64.b64decode(image_data)
                     st.image(BytesIO(image_bytes), caption="Generated Image", use_column_width=True)
                 else:
                     st.error("Failed to generate image. No image data received.")
-            else:
-                st.error(f"Error: {response.status_code} - {response.text}")
+            except requests.exceptions.JSONDecodeError:
+                st.error("The API response is not valid JSON. Check the response text for errors.")
