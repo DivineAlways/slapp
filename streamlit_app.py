@@ -66,10 +66,9 @@ if page == "How to Use":
     2️⃣ **Persistent AI:** `"Remember my name is Alex"` → Select **OpenAI Assistant**  
     3️⃣ **Function Calling:** `"What’s the weather in New York?"` → Select **OpenAI GPT + Tools**  
     4️⃣ **Image Generation:** `"A futuristic robot on Mars"` → Select **DALL·E 3**  
-    5️⃣ **Speech-to-Text:** Upload an audio file → Select **Whisper (Speech-to-Text)**  
-    6️⃣ **Real-time Transcription:** Click "Start Recording" → Select **Whisper (Live Speech)**  
+    5️⃣ **Batch Speech-to-Text:** Upload multiple audio files → Select **Whisper (Speech-to-Text)**  
+    6️⃣ **Live Speech-to-Text:** Click "Start Recording" → Select **Whisper (Live Speech)**  
     7️⃣ **Multilingual Transcription:** Select a language after transcribing.  
-    8️⃣ **Batch Transcription:** Upload multiple audio files for bulk processing.  
 
     **💡 Tips:**
     - Enter API keys in the sidebar before using models.
@@ -104,14 +103,15 @@ for message in st.session_state.messages:
 user_input = st.chat_input("Type your message...")
 
 if user_input:
-    # Add user message to history
     st.session_state.messages.append({"role": "user", "content": user_input})
-
     response = "🤖 AI: Sorry, no response yet."
 
     # OpenAI Whisper (Speech-to-Text)
     if model_choice == "Whisper (Speech-to-Text)":
-        uploaded_files = st.file_uploader("Upload multiple audio files (MP3, WAV, M4A)", type=["mp3", "wav", "m4a"], accept_multiple_files=True)
+        st.subheader("🎙 Upload Audio Files for Transcription")
+        
+        uploaded_files = st.file_uploader("Upload multiple audio files (MP3, WAV, M4A)", 
+                                          type=["mp3", "wav", "m4a"], accept_multiple_files=True)
         
         if uploaded_files:
             for uploaded_file in uploaded_files:
@@ -126,13 +126,17 @@ if user_input:
                             file=f
                         ).text
 
+                    st.success(f"✅ Transcription for {uploaded_file.name}: {response}")
+
                     # Language translation option
-                    target_lang = st.selectbox("Translate Transcription to:", ["None", "French", "Spanish", "German", "Chinese"])
+                    target_lang = st.selectbox(f"Translate {uploaded_file.name} Transcription to:", 
+                                               ["None", "French", "Spanish", "German", "Chinese"])
                     if target_lang != "None":
                         translated_text = GoogleTranslator(source="auto", target=target_lang.lower()).translate(response)
-                        response += f"\n\n🌍 Translated ({target_lang}): {translated_text}"
+                        st.markdown(f"🌍 **Translated ({target_lang})**: {translated_text}")
 
-                    st.success(f"✅ Transcription: {response}")
+                    st.session_state.messages.append({"role": "user", "content": f"📂 Uploaded: {uploaded_file.name}"})
+                    st.session_state.messages.append({"role": "assistant", "content": response})
 
                 except Exception as e:
                     st.error(f"⚠️ Whisper Error: {str(e)}")
@@ -140,6 +144,7 @@ if user_input:
     # OpenAI Whisper (Real-time Speech-to-Text)
     elif model_choice == "Whisper (Live Speech)":
         st.subheader("🎙 Live Speech Transcription")
+        
         recognizer = sr.Recognizer()
         
         if st.button("Start Recording"):
