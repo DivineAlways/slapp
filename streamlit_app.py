@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # Define your Vercel API URL
-API_URL = "https://your-vercel-app-url.vercel.app"  # Replace with your actual FastAPI Vercel URL
+API_URL = "https://apis-eta-five.vercel.app/"  # Replace with your actual FastAPI Vercel URL
 
 # Function to send a Discord notification
 DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/your-webhook-id"  # Replace with your actual webhook URL
