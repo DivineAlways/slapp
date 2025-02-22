@@ -91,7 +91,6 @@ if page == "Voice Assistant":
     <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
     """
     components.html(convai_html, height=300)
-
     st.stop()  # Stop execution if on this page
 
 # ---- Chat UI ----
@@ -120,8 +119,18 @@ if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     response = "🤖 AI: Sorry, no response yet."
 
+    # OpenAI GPT Chat
+    if model_choice == "OpenAI GPT" and openai_key:
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": user_input}]
+            ).choices[0].message.content
+        except Exception as e:
+            response = f"⚠️ OpenAI Error: {str(e)}"
+
     # OpenAI Whisper (Speech-to-Text)
-    if model_choice == "Whisper (Speech-to-Text)":
+    elif model_choice == "Whisper (Speech-to-Text)":
         st.subheader("🎙 Upload Audio Files for Transcription")
         
         uploaded_files = st.file_uploader("Upload multiple audio files (MP3, WAV, M4A)", 
