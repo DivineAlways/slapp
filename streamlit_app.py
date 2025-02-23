@@ -89,6 +89,8 @@ if page == "Voice Assistant":
     convai_html = """
     <elevenlabs-convai agent-id="07SRhAkpaGG5svmcKAlh"></elevenlabs-convai>
     <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+    <elevenlabs-convai agent-id="5V3UCGiQ1CiIhAzzGM5h"></elevenlabs-convai>
+    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
     """
     components.html(convai_html, height=300)
     st.stop()  # Stop execution if on this page
